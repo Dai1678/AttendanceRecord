@@ -1,13 +1,15 @@
 package com.robop.attendancerecord;
 
-public class CustomListItem{
+public class ListItemModel {
 
     private String subjectName; //教科名
-    private int attendNum;
+    private int attendNum;  //出席回数
     private int absentNum;  //欠席回数
     private int lateNum;    //遅刻回数
 
-    CustomListItem(String subjectName, int attendNum, int absentNum, int lateNum){
+    ListItemModel(){};
+
+    public ListItemModel(String subjectName, int attendNum, int absentNum, int lateNum){
         this.subjectName = subjectName;
         this.attendNum = attendNum;
         this.absentNum = absentNum;

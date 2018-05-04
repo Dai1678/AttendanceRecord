@@ -1,160 +1,213 @@
 package com.robop.attendancerecord;
 
-import android.app.ActionBar;
+import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.TimePicker;
-import android.widget.Toast;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.TimeZone;
 
+public class SettingClassTimeActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
 
-public class SettingClassTimeActivity extends AppCompatActivity implements View.OnClickListener {
+    Switch alarmSwitch[] = new Switch[5];
+    int alarmSwitchIds[] = new int[]{R.id.alarm1_switch, R.id.alarm2_switch, R.id.alarm3_switch, R.id.alarm4_switch, R.id.alarm5_switch};
 
-    Long[] alarmTimes;
-    SetNotificationTime setNotificationTime;
+    TextView endClassTime[] = new TextView[5];
+    int classTimeIds[] = new int[]{R.id.end_class_time1, R.id.end_class_time2, R.id.end_class_time3, R.id.end_class_time4, R.id.end_class_time5};
+
+    Button setAlarmButton[] = new Button[5];
+    int alarmButtonIds[] = new int[]{R.id.set_time_button1, R.id.set_time_button2, R.id.set_time_button3, R.id.set_time_button4, R.id.set_time_button5};
+
+    Calendar alarmCalendar[] = new Calendar[5];
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_class_time);
 
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getSupportActionBar();
         if (actionBar != null){
             actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeButtonEnabled(true);
         }
 
-        findViewById(R.id.class1Button).setOnClickListener(this);
-        findViewById(R.id.class2Button).setOnClickListener(this);
-        findViewById(R.id.class3Button).setOnClickListener(this);
-        findViewById(R.id.class4Button).setOnClickListener(this);
-        findViewById(R.id.class5Button).setOnClickListener(this);
-        findViewById(R.id.saveTime).setOnClickListener(this);
-
-        setNotificationTime = new SetNotificationTime(getApplicationContext());
-
-        //TODO 値保持処理
-        alarmTimes = new Long[5];
-        alarmTimes[0] = setNotificationTime.getAlarmTime(10, 50);
-        alarmTimes[1] = setNotificationTime.getAlarmTime(12, 40);
-        alarmTimes[2] = setNotificationTime.getAlarmTime(15, 10);
-        alarmTimes[3] = setNotificationTime.getAlarmTime(17, 0);
-        alarmTimes[4] = setNotificationTime.getAlarmTime(18, 50);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        boolean result = true;
-
-        switch (id) {
-            case android.R.id.home:
-                finish();
-                break;
-            default:
-                result = super.onOptionsItemSelected(item);
+        for (int i=0; i<alarmSwitch.length; i++){
+            alarmSwitch[i] = findViewById(alarmSwitchIds[i]);
+            alarmSwitch[i].setOnCheckedChangeListener(this);
         }
 
-        return result;
+        for (int i=0; i<endClassTime.length; i++){
+            endClassTime[i] = findViewById(classTimeIds[i]);
+        }
+
+        for (int i=0; i<setAlarmButton.length; i++){
+            setAlarmButton[i] = findViewById(alarmButtonIds[i]);
+            setAlarmButton[i].setOnClickListener(this);
+        }
+
+        for (int i=0; i<alarmCalendar.length; i++){
+            alarmCalendar[i] = Calendar.getInstance();
+        }
+
+        //TODO prefチェック
+
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-            case R.id.class1Button:
-                setTimeText(R.id.class1Time);
+            case R.id.set_time_button1:
+                setAlarmTime(0);
                 break;
 
-            case R.id.class2Button:
-                setTimeText(R.id.class2Time);
+            case R.id.set_time_button2:
+                setAlarmTime(1);
                 break;
 
-            case R.id.class3Button:
-                setTimeText(R.id.class3Time);
+            case R.id.set_time_button3:
+                setAlarmTime(2);
                 break;
 
-            case R.id.class4Button:
-                setTimeText(R.id.class4Time);
+            case R.id.set_time_button4:
+                setAlarmTime(3);
                 break;
 
-            case R.id.class5Button:
-                setTimeText(R.id.class5Time);
+            case R.id.set_time_button5:
+                setAlarmTime(4);
                 break;
 
-            case R.id.saveTime:
-                reloadNotificationTime();
-                Toast.makeText(this, "通知時間を更新しました", Toast.LENGTH_SHORT).show();
-                finish();
-                break;
         }
     }
 
-    //TODO 1限<2限<3限...となるように設定時間の入力制限
-    private void setTimeText(final int textId){
-        new TimePickerDialog(SettingClassTimeActivity.this, new TimePickerDialog.OnTimeSetListener() {
-            @Override
-            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
+    private void setAlarmTime(int element){
+        final Calendar calendarTarget = Calendar.getInstance();
+        final int year = calendarTarget.get(Calendar.YEAR);
+        final int monthOfYear = calendarTarget.get(Calendar.MONTH);
+        final int dayOfMonth = calendarTarget.get(Calendar.DAY_OF_MONTH);
+        final int hour = calendarTarget.get(Calendar.HOUR_OF_DAY);
+        final int minute = calendarTarget.get(Calendar.MINUTE);
 
-                switch (textId){
-                    case R.id.class1Time:
-                        //class1Hour = Integer.valueOf(String.format("%02d",hourOfDay));
-                        //class1Minute = Integer.valueOf(String.format("%02d", minute));
-                        alarmTimes[0] = setNotificationTime.getAlarmTime(hourOfDay, minute);
-                        break;
+        TimePickerDialog timePickerDialog = new TimePickerDialog(SettingClassTimeActivity.this, (timePicker, hourOfDay, minute1) -> {
+            alarmCalendar[element].set(Calendar.YEAR, year);
+            alarmCalendar[element].set(Calendar.MONTH, monthOfYear);
+            alarmCalendar[element].set(Calendar.DAY_OF_MONTH, dayOfMonth-1);
+            alarmCalendar[element].set(Calendar.HOUR_OF_DAY, hourOfDay);
+            alarmCalendar[element].set(Calendar.MINUTE, minute1);
+            alarmCalendar[element].set(Calendar.SECOND, 0);
 
-                    case R.id.class2Time:
-                        //class2Hour = Integer.valueOf(String.format("%02d",hourOfDay));
-                        //class2Minute = Integer.valueOf(String.format("%02d", minute));
-                        alarmTimes[1] = setNotificationTime.getAlarmTime(hourOfDay, minute);
-                        break;
+            //現在時刻を過ぎているかどうか確認
+            Calendar calendarNow = Calendar.getInstance();
+            TimeZone timeZone = TimeZone.getTimeZone("Asia/Tokyo");
+            calendarNow.setTimeZone(timeZone);
 
-                    case R.id.class3Time:
-                        //class3Hour = Integer.valueOf(String.format("%02d",hourOfDay));
-                        //class3Minute = Integer.valueOf(String.format("%02d", minute));
-                        alarmTimes[2] = setNotificationTime.getAlarmTime(hourOfDay, minute);
-                        break;
+            long targetMillis = calendarTarget.getTimeInMillis();
+            long nowMillis = calendarNow.getTimeInMillis();
 
-                    case R.id.class4Time:
-                        //class4Hour = Integer.valueOf(String.format("%02d",hourOfDay));
-                        //class4Minute = Integer.valueOf(String.format("%02d", minute));
-                        alarmTimes[3] = setNotificationTime.getAlarmTime(hourOfDay, minute);
-                        break;
-
-                    case R.id.class5Time:
-                        //class5Hour = Integer.valueOf(String.format("%02d",hourOfDay));
-                        //class5Minute = Integer.valueOf(String.format("%02d", minute));
-                        alarmTimes[4] = setNotificationTime.getAlarmTime(hourOfDay, minute);
-                        break;
-                }
-
-                TextView textView = findViewById(textId);
-                textView.setText(String.format("%02d:%02d", hourOfDay, minute));
+            if (targetMillis < nowMillis){
+                alarmCalendar[element].add(Calendar.DAY_OF_MONTH, 1);
             }
-        }, 0, 0, true).show();
+
+            endClassTime[element].setText(String.format("%02d:%02d", hourOfDay, minute1));
+        }, hour, minute, true);
+        timePickerDialog.show();
     }
 
-    private void reloadNotificationTime(){
+    @Override
+    public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+        switch (compoundButton.getId()){
+            case R.id.alarm1_switch:
+                if (isChecked){
+                    register(alarmCalendar[0].getTimeInMillis(), 1);
+                }else{
+                    unregister(1);
+                }
+                break;
 
-        AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+            case R.id.alarm2_switch:
+                if (isChecked){
+                    register(alarmCalendar[1].getTimeInMillis(), 2);
+                }else{
+                    unregister(2);
+                }
+                break;
 
-        //アラーム削除
-        for (int requestCode = 1; requestCode <= 5; requestCode++){
-            Intent intent = new Intent(SettingClassTimeActivity.this, AlarmReceiver.class);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(SettingClassTimeActivity.this, requestCode, intent, 0);
+            case R.id.alarm3_switch:
+                if (isChecked){
+                    register(alarmCalendar[2].getTimeInMillis(), 3);
+                }else{
+                    unregister(3);
+                }
+                break;
 
-            pendingIntent.cancel();
-            assert alarmManager != null;
-            alarmManager.cancel(pendingIntent);
+            case R.id.alarm4_switch:
+                if (isChecked){
+                    register(alarmCalendar[3].getTimeInMillis(), 4);
+                }else{
+                    unregister(4);
+                }
+                break;
+
+            case R.id.alarm5_switch:
+                if (isChecked){
+                    register(alarmCalendar[4].getTimeInMillis(), 5);
+                }else{
+                    unregister(5);
+                }
+                break;
+        }
+    }
+
+    private void register(long alarmTimeMillis, int classNum){
+        AlarmManager alarmManager = (AlarmManager) SettingClassTimeActivity.this.getSystemService(Context.ALARM_SERVICE);
+        PendingIntent pendingIntent = getPendingIntent(classNum);
+
+        if (alarmManager != null){
+            //alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTimeMillis, pendingIntent);
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, alarmTimeMillis, AlarmManager.INTERVAL_DAY * 7, pendingIntent);
+            @SuppressLint("SimpleDateFormat") DateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH時mm分");
+            Log.d("setAlarmTime", dateFormat.format(alarmTimeMillis));
         }
 
-        setNotificationTime.setNotification(alarmTimes);
+        //TODO pref保存
+    }
 
+    private void unregister(int classNum){
+        AlarmManager alarmManager = (AlarmManager) SettingClassTimeActivity.this.getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.cancel(getPendingIntent(classNum));
+        }
+
+        //TODO pref削除
+    }
+
+    private PendingIntent getPendingIntent(int classNum){
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        intent.putExtra("classNum", classNum);
+        intent.setClass(this, AlarmReceiver.class);
+
+        return PendingIntent.getBroadcast(this, classNum, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem){
+        switch(menuItem.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(menuItem);
     }
 }

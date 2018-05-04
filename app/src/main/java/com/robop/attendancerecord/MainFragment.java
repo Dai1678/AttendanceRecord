@@ -1,6 +1,7 @@
 package com.robop.attendancerecord;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -10,23 +11,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class MainFragment extends Fragment {
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 
-    ArrayList<CustomListItem> listItems;    //ListViewのAdapterに入れる情報
+public class MainFragment extends Fragment implements AdapterView.OnItemClickListener {
 
-    //listItemsの中身
-    ArrayList<String> subjectNameList = null;   //教科名
-    ArrayList<Integer> attendNumList = null;    //出席数(ListView上には現状表示しないので使ってない)
-    ArrayList<Integer> absentNumList = null;    //欠席数
-    ArrayList<Integer> lateNumList = null;      //遅刻数
+    ArrayList<ListItemModel> listItems = new ArrayList<>();    //ListViewのAdapterに入れる情報
 
+    ListAdapter adapter;
     ListView listView;
 
     Activity activity;
+    int currentPageNum = 0;
+    Realm realm;
 
     public static MainFragment newInstance( int position){
         MainFragment mainFragment = new MainFragment();
@@ -43,50 +46,132 @@ public class MainFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+    public void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
 
-        listItems = new ArrayList<>();
-        subjectNameList = new ArrayList<>();
-        attendNumList = new ArrayList<>();
-        absentNumList = new ArrayList<>();
-        lateNumList = new ArrayList<>();
+        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
+                .deleteRealmIfMigrationNeeded()
+                .build();
+
+        realm = Realm.getInstance(realmConfiguration);
 
         Bundle bundle = getArguments();
         if (bundle != null){
-            int currentPageNum = bundle.getInt("currentViewPage");
+            currentPageNum = bundle.getInt("currentViewPage");
             Log.d("currentPage", String.valueOf(currentPageNum));
-
-            GetSubjectData getSubjectData = new GetSubjectData(getContext());
-            listItems = getSubjectData.getSubjectDataList(currentPageNum);
         }
 
+        ListItemModel itemModel;
+
+        RealmResults<ListRealmModel> result = realm.where(ListRealmModel.class).equalTo("dayOfWeekId", currentPageNum).findAll();   //曜日合わせる
+
+        if (result.size() > 0){
+            for (int i=0; i<5; i++){
+                ListRealmModel realmModel = result.get(i);
+
+                //Realm上にデータがある教科の場合
+                if (realmModel != null){
+
+                    itemModel = new ListItemModel(realmModel.getSubjectName(), realmModel.getAttendResult(), realmModel.getAbsentResult(), realmModel.getLateResult());
+
+                } else {
+
+                    itemModel = new ListItemModel("未設定", 0, 0, 0);
+                }
+
+                listItems.add(itemModel);
+
+            }
+
+            //Realm上にデータが一つも無い場合
+        } else {
+            for (int i=0; i<5; i++){
+
+                itemModel = new ListItemModel("未設定", 0, 0, 0);
+
+                listItems.add(itemModel);
+
+                initRealmData(currentPageNum, i+1);
+            }
+        }
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
         return inflater.inflate(R.layout.fragment_main, container, false);
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState){
+    public void onViewCreated(@NonNull View view, final Bundle savedInstanceState){
         super.onViewCreated(view, savedInstanceState);
 
         listView = view.findViewById(R.id.listView);
 
-        CustomListAdapter adapter = new CustomListAdapter(activity.getApplicationContext(), R.layout.list_item, listItems);
+        adapter = new ListAdapter(activity.getApplicationContext(), R.layout.list_item, listItems);
         listView.setAdapter(adapter);
-        //adapter.notifyDataSetChanged();
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                EditSubjectNameDialog editSubjectNameDialog = new EditSubjectNameDialog(position);
-                editSubjectNameDialog.show(activity.getFragmentManager(), "subjectName");
-            }
-        });
+        listView.setOnItemClickListener(this);
     }
 
     @Override
-    public void onDestroyView(){
-        super.onDestroyView();
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        View dialogView = getLayoutInflater().inflate(R.layout.activity_subjectdialog, null);
+        builder.setView(dialogView)
+                .setPositiveButton("決定", (dialogInterface, i) -> {
+
+                    EditText editText = dialogView.findViewById(R.id.edit_subject_name);
+
+                    ListItemModel listItemModel = new ListItemModel();
+                    listItemModel.setSubjectName(editText.getText().toString());
+                    listItems.set(position, listItemModel);
+                    adapter.notifyDataSetChanged();
+
+                    //Realmに教科名書き込み
+                    RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
+                            .deleteRealmIfMigrationNeeded()
+                            .build();
+
+                    realm = Realm.getInstance(realmConfiguration);
+
+                    RealmResults<ListRealmModel> results = realm.where(ListRealmModel.class).equalTo("dayOfWeekId", currentPageNum).and().equalTo("classId", position + 1).findAll();
+                    ListRealmModel realmModel = results.get(0);
+
+                    realm.beginTransaction();
+                    if (realmModel != null) {
+                        realmModel.setSubjectName(editText.getText().toString());
+                    }
+                    realm.commitTransaction();
+
+                })
+                .setNegativeButton("キャンセル", (dialogInterface, i) -> {
+
+                })
+
+                .show();
+
     }
 
-    //TODO 画面に戻ってきたときのデータ更新
+    private void initRealmData(int currentPage, int currentClassNum) {
+        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
+                .deleteRealmIfMigrationNeeded()
+                .build();
+
+        realm = Realm.getInstance(realmConfiguration);
+
+        ListRealmModel realmModel = new ListRealmModel();
+        realmModel.setSubjectName("未設定");
+        realmModel.setAttendResult(0);
+        realmModel.setAbsentResult(0);
+        realmModel.setLateResult(0);
+        realmModel.setClassId(currentClassNum);
+        realmModel.setDayOfWeekId(currentPage);
+
+        realm.beginTransaction();
+        realm.copyToRealm(realmModel);
+        realm.commitTransaction();
+
+    }
 
 }

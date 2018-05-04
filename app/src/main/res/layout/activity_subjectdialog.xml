@@ -8,14 +8,14 @@
     android:padding="10dp">
 
     <TextView
-        android:id="@+id/dialogText"
+        android:id="@+id/dialog_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="教科名編集"
         android:textSize="25sp" />
 
     <EditText
-        android:id="@+id/customDlg_name"
+        android:id="@+id/edit_subject_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="text" />

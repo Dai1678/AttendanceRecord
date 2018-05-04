@@ -11,13 +11,13 @@ import android.widget.TextView;
 
 import java.util.List;
 
-public class CustomListAdapter extends ArrayAdapter<CustomListItem>  {
+public class ListAdapter extends ArrayAdapter<ListItemModel>  {
 
     private int resource;
-    private List<CustomListItem> listItems;
+    private List<ListItemModel> listItems;
     private LayoutInflater layoutInflater;
 
-    CustomListAdapter(@NonNull Context context, @LayoutRes int resource, List<CustomListItem> listItems) {
+    ListAdapter(@NonNull Context context, @LayoutRes int resource, List<ListItemModel> listItems) {
         super(context, resource, listItems);
 
         this.resource = resource;
@@ -26,11 +26,11 @@ public class CustomListAdapter extends ArrayAdapter<CustomListItem>  {
     }
 
     private static class ViewHolder {
-        private TextView classNumHolder;
-        private TextView subjectNameHolder;
-        private TextView attendNumHolder;
-        private TextView absentNumHolder;
-        private TextView lateNumHolder;
+        private TextView classNumHolder;    //◯限
+        private TextView subjectNameHolder; //教科名
+        private TextView attendNumHolder;   //出席回数
+        private TextView absentNumHolder;   //欠席回数
+        private TextView lateNumHolder;     //遅刻回数
     }
 
     @NonNull
@@ -52,7 +52,7 @@ public class CustomListAdapter extends ArrayAdapter<CustomListItem>  {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        CustomListItem listItem = this.listItems.get(position);     //ListView内に表示する情報
+        ListItemModel listItem = this.listItems.get(position);     //ListView内に表示する情報
 
         viewHolder.classNumHolder.setText(position+1 + "限");
         viewHolder.subjectNameHolder.setText(listItem.getSubjectName());

@@ -18,28 +18,35 @@
         android:layout_marginTop="25dp"
         android:orientation="horizontal">
 
+        <Switch
+            android:id="@+id/alarm1_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_gravity="center_vertical"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="25dp"
+            android:layout_marginStart="40dp"
             android:text="1限目"
             android:textSize="23sp" />
 
         <TextView
+            android:id="@+id/end_class_time1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="100dp"
+            android:layout_marginStart="30dp"
             android:text="10:50"
-            android:textSize="23sp"
-            android:id="@+id/class1Time"/>
+            android:textSize="23sp" />
 
         <Button
+            android:id="@+id/set_time_button1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
             android:text="変更"
-            android:textSize="20sp"
-            android:id="@+id/class1Button"/>
+            android:textSize="20sp" />
 
     </LinearLayout>
 
@@ -49,28 +56,35 @@
         android:layout_marginTop="25dp"
         android:orientation="horizontal">
 
+        <Switch
+            android:id="@+id/alarm2_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_gravity="center_vertical"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="25dp"
+            android:layout_marginStart="40dp"
             android:text="2限目"
             android:textSize="23sp" />
 
         <TextView
+            android:id="@+id/end_class_time2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="100dp"
+            android:layout_marginStart="30dp"
             android:text="12:40"
-            android:textSize="23sp"
-            android:id="@+id/class2Time"/>
+            android:textSize="23sp" />
 
         <Button
+            android:id="@+id/set_time_button2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
             android:text="変更"
-            android:textSize="20sp"
-            android:id="@+id/class2Button"/>
+            android:textSize="20sp" />
 
     </LinearLayout>
 
@@ -80,28 +94,35 @@
         android:layout_marginTop="25dp"
         android:orientation="horizontal">
 
+        <Switch
+            android:id="@+id/alarm3_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_gravity="center_vertical"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="25dp"
+            android:layout_marginStart="40dp"
             android:text="3限目"
             android:textSize="23sp" />
 
         <TextView
+            android:id="@+id/end_class_time3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="100dp"
+            android:layout_marginStart="30dp"
             android:text="15:10"
-            android:textSize="23sp"
-            android:id="@+id/class3Time"/>
+            android:textSize="23sp" />
 
         <Button
+            android:id="@+id/set_time_button3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
             android:text="変更"
-            android:textSize="20sp"
-            android:id="@+id/class3Button"/>
+            android:textSize="20sp" />
 
     </LinearLayout>
 
@@ -111,28 +132,35 @@
         android:layout_marginTop="25dp"
         android:orientation="horizontal">
 
+        <Switch
+            android:id="@+id/alarm4_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_gravity="center_vertical"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="25dp"
+            android:layout_marginStart="40dp"
             android:text="4限目"
             android:textSize="23sp" />
 
         <TextView
+            android:id="@+id/end_class_time4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="100dp"
+            android:layout_marginStart="30dp"
             android:text="17:00"
-            android:textSize="23sp"
-            android:id="@+id/class4Time"/>
+            android:textSize="23sp" />
 
         <Button
+            android:id="@+id/set_time_button4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
             android:text="変更"
-            android:textSize="20sp"
-            android:id="@+id/class4Button"/>
+            android:textSize="20sp" />
 
     </LinearLayout>
 
@@ -142,44 +170,36 @@
         android:layout_marginTop="25dp"
         android:orientation="horizontal">
 
+        <Switch
+            android:id="@+id/alarm5_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_gravity="center_vertical"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="25dp"
+            android:layout_marginStart="40dp"
             android:text="5限目"
             android:textSize="23sp" />
 
         <TextView
+            android:id="@+id/end_class_time5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="100dp"
+            android:layout_marginStart="30dp"
             android:text="18:50"
-            android:textSize="23sp"
-            android:id="@+id/class5Time"/>
+            android:textSize="23sp" />
 
         <Button
+            android:id="@+id/set_time_button5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
             android:text="変更"
-            android:textSize="20sp"
-            android:id="@+id/class5Button"/>
+            android:textSize="20sp" />
 
     </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <Button
-            android:id="@+id/saveTime"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="10dp"
-            android:text="保存" />
-
-    </RelativeLayout>
 
 </LinearLayout>
