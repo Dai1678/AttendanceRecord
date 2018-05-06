@@ -19,8 +19,6 @@ import io.realm.RealmResults;
 
 public class MainActivity extends AppCompatActivity {
 
-    ViewPager viewPager;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
         String[] tabNames = getResources().getStringArray(R.array.tabNames);    //TabLayoutに表示する文字を管理する配列
 
         TabLayout tabLayout = findViewById(R.id.tabs);
-        viewPager = findViewById(R.id.pager);
+        ViewPager viewPager = findViewById(R.id.pager);
 
         if (savedInstanceState == null){
             //曜日の数だけFragment生成
