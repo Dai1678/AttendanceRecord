@@ -9,17 +9,20 @@ import android.content.Intent;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
-import java.text.DateFormat;
+import android.widget.TimePicker;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmResults;
 
 public class SettingClassTimeActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
 
@@ -34,23 +37,65 @@ public class SettingClassTimeActivity extends AppCompatActivity implements Compo
 
     Calendar alarmCalendar[] = new Calendar[5];
 
+    Realm realm;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_class_time);
+
+
+        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
+                .deleteRealmIfMigrationNeeded()
+                .build();
+
+        realm = Realm.getInstance(realmConfiguration);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null){
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        for (int i=0; i<alarmSwitch.length; i++){
-            alarmSwitch[i] = findViewById(alarmSwitchIds[i]);
-            alarmSwitch[i].setOnCheckedChangeListener(this);
-        }
-
+        //初期化処理
         for (int i=0; i<endClassTime.length; i++){
             endClassTime[i] = findViewById(classTimeIds[i]);
+        }
+
+        for (int i=0; i<alarmCalendar.length; i++){
+            alarmCalendar[i] = Calendar.getInstance();
+        }
+
+        long defaultAlarmTimeInMillis[] = getDefaultAlarmTimeInMillis();
+
+        RealmResults<EndClassTimeRealmModel> endClassTimeRealmResults = realm.where(EndClassTimeRealmModel.class).findAll();
+        if (endClassTimeRealmResults.size() > 0){
+            for (int i=0; i<endClassTime.length; i++){
+                EndClassTimeRealmModel realmModel = endClassTimeRealmResults.get(i);
+
+                if (realmModel != null){
+                    @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
+                    String timeFormatted = simpleDateFormat.format(realmModel.getEndClassTimeInMillis());
+                    endClassTime[i].setText(timeFormatted);
+
+                    alarmCalendar[i].setTimeInMillis(realmModel.getEndClassTimeInMillis());
+                }else{
+                    @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
+                    String timeFormatted = simpleDateFormat.format(defaultAlarmTimeInMillis[i]);
+                    endClassTime[i].setText(timeFormatted);
+
+                    alarmCalendar[i].setTimeInMillis(defaultAlarmTimeInMillis[i]);
+                }
+            }
+        }else{
+            for (int i=0; i<endClassTime.length; i++){
+                @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
+                String timeFormatted = simpleDateFormat.format(defaultAlarmTimeInMillis[i]);
+                endClassTime[i].setText(timeFormatted);
+                initEndClassTimeRealm(i, defaultAlarmTimeInMillis[i]);
+
+                alarmCalendar[i].setTimeInMillis(defaultAlarmTimeInMillis[i]);
+                initAlarmTimeInMillisRealm(i, defaultAlarmTimeInMillis[i]);
+            }
         }
 
         for (int i=0; i<setAlarmButton.length; i++){
@@ -58,12 +103,77 @@ public class SettingClassTimeActivity extends AppCompatActivity implements Compo
             setAlarmButton[i].setOnClickListener(this);
         }
 
-        for (int i=0; i<alarmCalendar.length; i++){
-            alarmCalendar[i] = Calendar.getInstance();
+        //Switchの初期化処理
+        for (int i=0; i<alarmSwitch.length; i++){
+            alarmSwitch[i] = findViewById(alarmSwitchIds[i]);
+            alarmSwitch[i].setOnCheckedChangeListener(this);
         }
 
-        //TODO prefチェック
+        //Realm参照してSwitchのOn/Offチェック
+        RealmResults<AlarmSwitchRealmModel> alarmSwitchRealmResults = realm.where(AlarmSwitchRealmModel.class).findAll();
+        if (alarmSwitchRealmResults.size() > 0){
+            for (int i=0; i<alarmSwitch.length; i++){
+                AlarmSwitchRealmModel realmModel = alarmSwitchRealmResults.get(i);
 
+                if (realmModel != null){
+                    alarmSwitch[i].setChecked(realmModel.isAlarmSwitch());
+                }else{
+                    alarmSwitch[i].setChecked(false);
+                }
+            }
+        }else{
+            for (int i=0; i<alarmSwitch.length; i++){
+                alarmSwitch[i].setChecked(false);
+                initAlarmSwitchRealm(i);
+            }
+        }
+    }
+
+    private void initAlarmSwitchRealm(int id){
+        realm.beginTransaction();
+
+        AlarmSwitchRealmModel realmModel = realm.createObject(AlarmSwitchRealmModel.class);
+        realmModel.setId(id);
+        realmModel.setAlarmSwitch(false);
+
+        realm.commitTransaction();
+    }
+
+    private void initEndClassTimeRealm(int id, long defaultTime){
+        realm.beginTransaction();
+
+        EndClassTimeRealmModel realmModel = realm.createObject(EndClassTimeRealmModel.class);
+        realmModel.setId(id);
+        realmModel.setEndClassTimeInMillis(defaultTime);
+
+        realm.commitTransaction();
+    }
+
+    private long[] getDefaultAlarmTimeInMillis(){
+        int defaultHourOfDay[] = new int[]{10, 12, 15, 17, 18};
+        int defaultMinute[] = new int[]{50, 40, 10, 0, 50};
+        long defaultAlarmTimeInMillis[] = new long[5];
+
+        Calendar calendar[] = new Calendar[5];
+        for (int i=0; i<calendar.length; i++){
+            calendar[i] = Calendar.getInstance();
+            calendar[i].set(Calendar.HOUR_OF_DAY, defaultHourOfDay[i]);
+            calendar[i].set(Calendar.MINUTE, defaultMinute[i]);
+
+            defaultAlarmTimeInMillis[i] = calendar[i].getTimeInMillis();
+        }
+
+        return defaultAlarmTimeInMillis;
+    }
+
+    private void initAlarmTimeInMillisRealm(int id, long time){
+        realm.beginTransaction();
+
+        AlarmCalendarRealmModel realmModel = realm.createObject(AlarmCalendarRealmModel.class);
+        realmModel.setId(id);
+        realmModel.setAlarmTimeInMillis(time);
+
+        realm.commitTransaction();
     }
 
     @Override
@@ -88,25 +198,19 @@ public class SettingClassTimeActivity extends AppCompatActivity implements Compo
             case R.id.set_time_button5:
                 setAlarmTime(4);
                 break;
-
         }
     }
 
     private void setAlarmTime(int element){
         final Calendar calendarTarget = Calendar.getInstance();
-        final int year = calendarTarget.get(Calendar.YEAR);
-        final int monthOfYear = calendarTarget.get(Calendar.MONTH);
-        final int dayOfMonth = calendarTarget.get(Calendar.DAY_OF_MONTH);
         final int hour = calendarTarget.get(Calendar.HOUR_OF_DAY);
         final int minute = calendarTarget.get(Calendar.MINUTE);
 
-        TimePickerDialog timePickerDialog = new TimePickerDialog(SettingClassTimeActivity.this, (timePicker, hourOfDay, minute1) -> {
-            alarmCalendar[element].set(Calendar.YEAR, year);
-            alarmCalendar[element].set(Calendar.MONTH, monthOfYear);
-            alarmCalendar[element].set(Calendar.DAY_OF_MONTH, dayOfMonth-1);
-            alarmCalendar[element].set(Calendar.HOUR_OF_DAY, hourOfDay);
-            alarmCalendar[element].set(Calendar.MINUTE, minute1);
-            alarmCalendar[element].set(Calendar.SECOND, 0);
+        TimePickerDialog timePickerDialog = new TimePickerDialog(SettingClassTimeActivity.this, (TimePicker timePicker, int hourOfDay, int minute1) -> {
+            calendarTarget.set(Calendar.DAY_OF_MONTH, calendarTarget.get(Calendar.DAY_OF_MONTH) -1 );
+            calendarTarget.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            calendarTarget.set(Calendar.MINUTE, minute1);
+            calendarTarget.set(Calendar.SECOND, 0);
 
             //現在時刻を過ぎているかどうか確認
             Calendar calendarNow = Calendar.getInstance();
@@ -117,14 +221,31 @@ public class SettingClassTimeActivity extends AppCompatActivity implements Compo
             long nowMillis = calendarNow.getTimeInMillis();
 
             if (targetMillis < nowMillis){
-                alarmCalendar[element].add(Calendar.DAY_OF_MONTH, 1);
+                calendarTarget.add(Calendar.DAY_OF_MONTH, 1);
+                targetMillis = calendarTarget.getTimeInMillis();
             }
 
-            endClassTime[element].setText(String.format("%02d:%02d", hourOfDay, minute1));
+            alarmCalendar[element] = calendarTarget;
+
+            //TextView更新
+            String alarmTime = String.format("%02d:%02d", hourOfDay, minute1);
+            endClassTime[element].setText(alarmTime);
+
+            //Realmに時間書き込み
+            RealmResults<EndClassTimeRealmModel> results = realm.where(EndClassTimeRealmModel.class).equalTo("id", element).findAll();
+            EndClassTimeRealmModel realmModel = results.get(0);
+
+            realm.beginTransaction();
+            if (realmModel != null){
+                realmModel.setEndClassTimeInMillis(targetMillis);
+            }
+            realm.commitTransaction();
+
         }, hour, minute, true);
         timePickerDialog.show();
     }
 
+    //Switchの切り替わり時の処理
     @Override
     public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
         switch (compoundButton.getId()){
@@ -170,6 +291,7 @@ public class SettingClassTimeActivity extends AppCompatActivity implements Compo
         }
     }
 
+    //アラーム登録
     private void register(long alarmTimeMillis, int classNum){
         AlarmManager alarmManager = (AlarmManager) SettingClassTimeActivity.this.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pendingIntent = getPendingIntent(classNum);
@@ -177,20 +299,30 @@ public class SettingClassTimeActivity extends AppCompatActivity implements Compo
         if (alarmManager != null){
             //alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTimeMillis, pendingIntent);
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, alarmTimeMillis, AlarmManager.INTERVAL_DAY * 7, pendingIntent);
-            @SuppressLint("SimpleDateFormat") DateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH時mm分");
-            Log.d("setAlarmTime", dateFormat.format(alarmTimeMillis));
         }
 
-        //TODO pref保存
+        updateRealmAlarmSwitch(classNum,true);
     }
 
+    //アラーム削除
     private void unregister(int classNum){
         AlarmManager alarmManager = (AlarmManager) SettingClassTimeActivity.this.getSystemService(Context.ALARM_SERVICE);
         if (alarmManager != null) {
             alarmManager.cancel(getPendingIntent(classNum));
         }
 
-        //TODO pref削除
+        updateRealmAlarmSwitch(classNum,false);
+    }
+
+    private void updateRealmAlarmSwitch(int classNum, boolean flag){
+        RealmResults<AlarmSwitchRealmModel> results = realm.where(AlarmSwitchRealmModel.class).equalTo("id", classNum - 1).findAll();
+        AlarmSwitchRealmModel realmModel = results.get(0);
+
+        realm.beginTransaction();
+        if (realmModel != null){
+            realmModel.setAlarmSwitch(flag);
+        }
+        realm.commitTransaction();
     }
 
     private PendingIntent getPendingIntent(int classNum){
@@ -209,5 +341,11 @@ public class SettingClassTimeActivity extends AppCompatActivity implements Compo
                 return true;
         }
         return super.onOptionsItemSelected(menuItem);
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        realm.close();
     }
 }
