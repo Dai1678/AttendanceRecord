@@ -302,8 +302,6 @@ public class SettingClassTimeActivity extends AppCompatActivity implements Compo
         if (alarmManager != null){
             //alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTimeMillis, pendingIntent);
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, alarmTimeMillis, AlarmManager.INTERVAL_DAY * 7, pendingIntent);
-            @SuppressLint("SimpleDateFormat") DateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd日 HH時mm分");
-            Log.d("setAlarmTime", dateFormat.format(alarmTimeMillis));
         }
 
         updateRealmAlarmSwitch(classNum,true);
