@@ -1,11 +1,9 @@
 package com.robop.attendancerecord;
 
 import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
 
 public class EndClassTimeRealmModel extends RealmObject {
 
-    @PrimaryKey
     private int id;
     private String endClassTime;
     private long endClassTimeInMillis;

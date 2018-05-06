@@ -1,11 +1,9 @@
 package com.robop.attendancerecord;
 
 import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
 
 public class AlarmSwitchRealmModel extends RealmObject {
 
-    @PrimaryKey
     private int id;
     private boolean alarmSwitch;
 
