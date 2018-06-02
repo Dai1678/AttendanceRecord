@@ -17,6 +17,7 @@ local.properties
 # User-specific configurations
 .idea/libraries/
 .idea/workspace.xml
+.idea/caches/build_file_checksums.ser
 .idea/tasks.xml
 .idea/.name
 .idea/compiler.xml

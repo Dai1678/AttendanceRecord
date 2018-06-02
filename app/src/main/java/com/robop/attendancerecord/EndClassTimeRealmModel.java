@@ -5,15 +5,15 @@ import io.realm.RealmObject;
 public class EndClassTimeRealmModel extends RealmObject {
 
     private int id;
-    private String endClassTime;
+    private String endClassTimeStr;
     private long endClassTimeInMillis;
 
     public int getId() {
         return id;
     }
 
-    public String getEndClassTime() {
-        return endClassTime;
+    public String getEndClassTimeStr() {
+        return endClassTimeStr;
     }
 
     public long getEndClassTimeInMillis() {
@@ -24,8 +24,8 @@ public class EndClassTimeRealmModel extends RealmObject {
         this.id = id;
     }
 
-    public void setEndClassTime(String endClassTime) {
-        this.endClassTime = endClassTime;
+    public void setEndClassTimeStr(String endClassTime) {
+        this.endClassTimeStr = endClassTime;
     }
 
     public void setEndClassTimeInMillis(long endClassTimeInMillis) {
